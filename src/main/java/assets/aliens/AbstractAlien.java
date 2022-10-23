@@ -1,15 +1,13 @@
-package Aliens;
+package assets.aliens;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-import Graphics.CustomPaint;
+import graphics.CustomPaint;
 
-import javax.swing.plaf.PanelUI;
+import static assets.AssetsConstants.PIXEL_SIZE;
 
 abstract class AbstractAlien {
-    protected static final int PIXEL_SIZE = 5;
-
     private BufferedImage firstAlienAsset;
     private BufferedImage secondAlienAsset;
 

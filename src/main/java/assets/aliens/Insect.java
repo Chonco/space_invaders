@@ -1,7 +1,9 @@
-package Aliens;
+package assets.aliens;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+
+import static assets.AssetsConstants.PIXEL_SIZE;
 
 public class Insect extends AbstractAlien {
     @Override
