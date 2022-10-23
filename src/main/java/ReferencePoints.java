@@ -1,0 +1,2 @@
+public class ReferencePoints {
+}

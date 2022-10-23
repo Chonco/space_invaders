@@ -5,10 +5,15 @@ import graphics.CustomPaint;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+import static assets.AssetsConstants.OBJECTS_COLOR;
 import static assets.AssetsConstants.PIXEL_SIZE;
 
 public class Player implements CollidableAsset {
     private BufferedImage asset;
+
+    public Player() {
+        getAsset();
+    }
 
     public BufferedImage getAsset() {
         if (asset == null) {
@@ -25,7 +30,7 @@ public class Player implements CollidableAsset {
 
         CustomPaint customPaint = new CustomPaint(graphics2D);
 
-        customPaint.setColor(Color.WHITE);
+        customPaint.setColor(OBJECTS_COLOR);
 
         customPaint.fillRectangle(PIXEL_SIZE * 4, 0, PIXEL_SIZE * 5, PIXEL_SIZE * 1);
         customPaint.fillRectangle(PIXEL_SIZE * 3, PIXEL_SIZE * 1, PIXEL_SIZE * 6, PIXEL_SIZE * 2);
@@ -38,10 +43,5 @@ public class Player implements CollidableAsset {
     @Override
     public Rectangle getBounds() {
         return new Rectangle(PIXEL_SIZE * 9, PIXEL_SIZE * 5);
-    }
-
-    @Override
-    public Point originPointOfBounds() {
-        return new Point(0, 0);
     }
 }
