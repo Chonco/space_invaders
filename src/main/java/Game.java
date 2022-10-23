@@ -92,7 +92,6 @@ public class Game extends JPanel {
     }
 
     public void playerFired() {
-        System.out.println("Player fired");
         this.playerProjectiles.add(new Point(
                 referencePoints.PLAYER_X + assets.getPlayer().getBounds().width / 2,
                 getHeight() - GameConstants.GAP_SCREEN_Y -
@@ -105,38 +104,52 @@ public class Game extends JPanel {
                 .toList();
 
         if (iteration++ % referencePoints.N_ITERATION_ALIENS_MOVES == 0) {
-            int maxX = 0;
-            int minX = getWidth();
-
-
-            for (AlienDisplayed alienDisplayed : aliensAlive) {
-                Point point = alienDisplayed.getPoint();
-                int x = point.x + GameConstants.ALIEN_STEP * alienDirectionX;
-                int y = point.y + GameConstants.GAP_ALIEN_Y * alienIncrementY;
-                alienDisplayed.setPoint(new Point(x, y));
-
-                if (x > maxX)
-                    maxX = x;
-                if (x < minX)
-                    minX = x;
-            }
-
-            if (maxX + GameConstants.ALIEN_SIZE_X >= getWidth() - GameConstants.GAP_SCREEN_X) {
-                alienDirectionX = -1;
-                alienIncrementY = 1;
-            } else if (minX <= GameConstants.GAP_SCREEN_X) {
-                alienDirectionX = 1;
-                alienIncrementY = 1;
-            } else {
-                alienIncrementY = 0;
-            }
-
-
-            alienUsesFirstAsset = !alienUsesFirstAsset;
+            updateAliensCoordinates(aliensAlive);
         }
 
-        aliensDestroyed.removeIf(alienDestroyed -> iteration - alienDestroyed.getIteration() >= referencePoints.N_ITERATION_ALIENS_MOVES);
+        updateAliensDestroyed();
+        updateProjectiles();
+        checkCollidesAliensProjectiles(aliensAlive);
+        updateAlienSpeed();
+        updatePlayer();
+    }
 
+    private void updateAliensCoordinates(List<AlienDisplayed> aliensAlive) {
+        int maxX = 0;
+        int minX = getWidth();
+
+        for (AlienDisplayed alienDisplayed : aliensAlive) {
+            Point point = alienDisplayed.getPoint();
+            int x = point.x + GameConstants.ALIEN_STEP * alienDirectionX;
+            int y = point.y + GameConstants.GAP_ALIEN_Y * alienIncrementY;
+            alienDisplayed.setPoint(new Point(x, y));
+
+            if (x > maxX)
+                maxX = x;
+            if (x < minX)
+                minX = x;
+        }
+
+        if (maxX + GameConstants.ALIEN_SIZE_X >= getWidth() - GameConstants.GAP_SCREEN_X) {
+            alienDirectionX = -1;
+            alienIncrementY = 1;
+        } else if (minX <= GameConstants.GAP_SCREEN_X) {
+            alienDirectionX = 1;
+            alienIncrementY = 1;
+        } else {
+            alienIncrementY = 0;
+        }
+
+
+        alienUsesFirstAsset = !alienUsesFirstAsset;
+    }
+
+    private void updateAliensDestroyed() {
+        aliensDestroyed.removeIf(alienDestroyed ->
+                iteration - alienDestroyed.getIteration() >= referencePoints.N_ITERATION_ALIENS_MOVES);
+    }
+
+    private void updateProjectiles() {
         List<Point> projectilesToRemove = new ArrayList<>();
         for (Point projectile : playerProjectiles) {
             int y = projectile.y - GameConstants.PROJECTILE_MOVEMENT;
@@ -148,28 +161,45 @@ public class Game extends JPanel {
         }
 
         playerProjectiles.removeAll(projectilesToRemove);
+    }
 
+    private void checkCollidesAliensProjectiles(List<AlienDisplayed> aliensAlive) {
         for (AlienDisplayed alienDisplayed : aliensAlive) {
-            if (alienDisplayed.isAlive()) {
-                Point projectileToBeRemoved = null;
-                for (Point projectile : playerProjectiles) {
-                    if (contextualRectangleContainsPoint(
-                            alienDisplayed.getPoint(),
-                            alienDisplayed.getAlien().getBounds(),
-                            projectile)
-                    ) {
-                        alienDisplayed.setAlive(false);
-                        this.aliensDestroyed.add(new AlienDestroyed(alienDisplayed.getPoint(), iteration));
-                        projectileToBeRemoved = projectile;
-                        break;
-                    }
+            Point projectileToBeRemoved = null;
+            for (Point projectile : playerProjectiles) {
+                if (contextualRectangleContainsPoint(
+                        alienDisplayed.getPoint(),
+                        alienDisplayed.getAlien().getBounds(),
+                        projectile)
+                ) {
+                    alienDisplayed.setAlive(false);
+                    this.aliensDestroyed.add(new AlienDestroyed(alienDisplayed.getPoint(), iteration));
+                    projectileToBeRemoved = projectile;
+                    break;
                 }
-
-                if (projectileToBeRemoved != null)
-                    playerProjectiles.remove(projectileToBeRemoved);
             }
-        }
 
+            if (projectileToBeRemoved != null)
+                playerProjectiles.remove(projectileToBeRemoved);
+        }
+    }
+
+    private void updateAlienSpeed() {
+        int aliensAliveCount = (int) this.aliens.stream().filter(AlienDisplayed::isAlive).count();
+
+        switch (GameConstants.ALIENS_TOTAL_NUM - aliensAliveCount) {
+            case 4 -> referencePoints.N_ITERATION_ALIENS_MOVES = 8;
+            case 8 -> referencePoints.N_ITERATION_ALIENS_MOVES = 7;
+            case 12 -> referencePoints.N_ITERATION_ALIENS_MOVES = 6;
+            case 16 -> referencePoints.N_ITERATION_ALIENS_MOVES = 5;
+            case 18 -> referencePoints.N_ITERATION_ALIENS_MOVES = 4;
+            case 20 -> referencePoints.N_ITERATION_ALIENS_MOVES = 3;
+            case 22 -> referencePoints.N_ITERATION_ALIENS_MOVES = 2;
+            case 24 -> referencePoints.N_ITERATION_ALIENS_MOVES = 1;
+        }
+    }
+
+    private void updatePlayer() {
         int playerMovement = GameConstants.PLAYER_MOVEMENT * playerDirection;
         if (referencePoints.PLAYER_X + playerMovement > GameConstants.GAP_SCREEN_X &&
                 referencePoints.PLAYER_X + assets.getPlayer().getBounds().width + playerMovement < getWidth() - GameConstants.GAP_SCREEN_X
