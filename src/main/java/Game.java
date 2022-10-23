@@ -100,11 +100,16 @@ public class Game extends JPanel {
     }
 
     private void updateGameState() {
+        var aliensAlive = aliens.stream()
+                .filter(AlienDisplayed::isAlive)
+                .toList();
+
         if (iteration++ % referencePoints.N_ITERATION_ALIENS_MOVES == 0) {
             int maxX = 0;
             int minX = getWidth();
 
-            for (AlienDisplayed alienDisplayed : aliens) {
+
+            for (AlienDisplayed alienDisplayed : aliensAlive) {
                 Point point = alienDisplayed.getPoint();
                 int x = point.x + GameConstants.ALIEN_STEP * alienDirectionX;
                 int y = point.y + GameConstants.GAP_ALIEN_Y * alienIncrementY;
@@ -144,7 +149,7 @@ public class Game extends JPanel {
 
         playerProjectiles.removeAll(projectilesToRemove);
 
-        for (AlienDisplayed alienDisplayed : aliens) {
+        for (AlienDisplayed alienDisplayed : aliensAlive) {
             if (alienDisplayed.isAlive()) {
                 Point projectileToBeRemoved = null;
                 for (Point projectile : playerProjectiles) {
@@ -180,6 +185,12 @@ public class Game extends JPanel {
     @Override
     public void paint(Graphics g) {
         super.paint(g);
+
+        if (this.aliens.stream().noneMatch(AlienDisplayed::isAlive)) {
+            stopGame();
+            JOptionPane.showMessageDialog(this, "Game Finished!");
+            System.exit(0);
+        }
 
         g.drawImage(assets.getBackgroundScreen().getAsset(this.getWidth(), this.getHeight()), 0, 0, null);
 
