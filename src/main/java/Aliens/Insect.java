@@ -55,4 +55,14 @@ public class Insect extends AbstractAlien {
 
         return basicCanvas.bufferedImage;
     }
+
+    @Override
+    public Rectangle getBounds() {
+        return new Rectangle(PIXEL_SIZE * 12, PIXEL_SIZE * 8);
+    }
+
+    @Override
+    public Point originPointOfBounds() {
+        return new Point(PIXEL_SIZE * 1, PIXEL_SIZE * 1);
+    }
 }

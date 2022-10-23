@@ -5,6 +5,8 @@ import java.awt.image.BufferedImage;
 
 import Graphics.CustomPaint;
 
+import javax.swing.plaf.PanelUI;
+
 abstract class AbstractAlien {
     protected static final int PIXEL_SIZE = 5;
 
@@ -30,6 +32,10 @@ abstract class AbstractAlien {
     protected abstract BufferedImage generateFirstAlienAsset(BasicCanvas basicCanvas);
 
     protected abstract BufferedImage generateSecondAlienAsset(BasicCanvas basicCanvas);
+
+    public abstract Rectangle getBounds();
+
+    public abstract Point originPointOfBounds();
 
     protected static class BasicCanvas {
         BufferedImage bufferedImage;
