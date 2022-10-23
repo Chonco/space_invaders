@@ -7,7 +7,7 @@ import java.awt.image.BufferedImage;
 
 import static assets.AssetsConstants.PIXEL_SIZE;
 
-public class Player {
+public class Player implements CollidableAsset {
     private BufferedImage asset;
 
     public BufferedImage getAsset() {
@@ -33,5 +33,15 @@ public class Player {
         customPaint.fillRectangle(0, PIXEL_SIZE * 3, PIXEL_SIZE * 9, PIXEL_SIZE * 5);
 
         return bufferedImage;
+    }
+
+    @Override
+    public Rectangle getBounds() {
+        return new Rectangle(PIXEL_SIZE * 9, PIXEL_SIZE * 5);
+    }
+
+    @Override
+    public Point originPointOfBounds() {
+        return new Point(0, 0);
     }
 }

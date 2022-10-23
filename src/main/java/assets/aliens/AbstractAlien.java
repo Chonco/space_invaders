@@ -3,11 +3,12 @@ package assets.aliens;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+import assets.CollidableAsset;
 import graphics.CustomPaint;
 
 import static assets.AssetsConstants.PIXEL_SIZE;
 
-abstract class AbstractAlien {
+abstract class AbstractAlien implements CollidableAsset {
     private BufferedImage firstAlienAsset;
     private BufferedImage secondAlienAsset;
 
@@ -30,10 +31,6 @@ abstract class AbstractAlien {
     protected abstract BufferedImage generateFirstAlienAsset(BasicCanvas basicCanvas);
 
     protected abstract BufferedImage generateSecondAlienAsset(BasicCanvas basicCanvas);
-
-    public abstract Rectangle getBounds();
-
-    public abstract Point originPointOfBounds();
 
     protected static class BasicCanvas {
         BufferedImage bufferedImage;
