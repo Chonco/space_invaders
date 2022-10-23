@@ -17,4 +17,6 @@ public class GameConstants {
     static final int UPDATE_INTERVAL = 5;
 
     static final int PLAYER_MOVEMENT = 5;
+
+    static final int PROJECTILE_MOVEMENT = 5;
 }

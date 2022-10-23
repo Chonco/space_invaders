@@ -20,27 +20,30 @@ public class SpaceInvaders {
         frame.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
-                if (e.getKeyChar() == KeyEvent.VK_ESCAPE) {
-                    if (game.isGameRunning()) {
-                        game.stopGame();
-                    } else {
-                        game.resumeGame();
+                switch (e.getKeyChar()) {
+                    case KeyEvent.VK_ESCAPE -> {
+                        if (game.isGameRunning()) {
+                            game.stopGame();
+                        } else {
+                            game.resumeGame();
+                        }
                     }
+                    case KeyEvent.VK_SPACE -> game.playerFired();
                 }
             }
 
             @Override
             public void keyPressed(KeyEvent e) {
                 switch (e.getKeyCode()) {
-                    case KeyEvent.VK_RIGHT -> game.processPlayerInput(1);
-                    case KeyEvent.VK_LEFT -> game.processPlayerInput(-1);
+                    case KeyEvent.VK_RIGHT -> game.changePlayerMovement(1);
+                    case KeyEvent.VK_LEFT -> game.changePlayerMovement(-1);
                 }
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
                 switch (e.getKeyCode()) {
-                    case KeyEvent.VK_RIGHT, KeyEvent.VK_LEFT -> game.processPlayerInput(0);
+                    case KeyEvent.VK_RIGHT, KeyEvent.VK_LEFT -> game.changePlayerMovement(0);
                 }
             }
         });
