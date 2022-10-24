@@ -12,7 +12,7 @@ public class Game extends JPanel {
     private static class ReferencePoints {
         int[] ALIENS_BOTTOM = new int[GameConstants.ALIENS_NUM_COLUMNS];
 
-        int N_ITERATION_ALIENS_MOVES = 10;
+        int N_ITERATION_ALIENS_MOVES = 30;
 
         int PLAYER_X = GameConstants.GAP_SCREEN_X;
     }
@@ -243,14 +243,9 @@ public class Game extends JPanel {
         int aliensAliveCount = (int) this.aliens.stream().filter(AlienDisplayed::isAlive).count();
 
         switch (GameConstants.ALIENS_TOTAL_NUM - aliensAliveCount) {
-            case 4 -> referencePoints.N_ITERATION_ALIENS_MOVES = 8;
-            case 8 -> referencePoints.N_ITERATION_ALIENS_MOVES = 7;
-            case 12 -> referencePoints.N_ITERATION_ALIENS_MOVES = 6;
-            case 16 -> referencePoints.N_ITERATION_ALIENS_MOVES = 5;
-            case 18 -> referencePoints.N_ITERATION_ALIENS_MOVES = 4;
-            case 20 -> referencePoints.N_ITERATION_ALIENS_MOVES = 3;
-            case 22 -> referencePoints.N_ITERATION_ALIENS_MOVES = 2;
-            case 24 -> referencePoints.N_ITERATION_ALIENS_MOVES = 1;
+            case 4, 8, 12, 16 -> referencePoints.N_ITERATION_ALIENS_MOVES = 26;
+            case 18, 20, 22 -> referencePoints.N_ITERATION_ALIENS_MOVES -= 20;
+            case 24 -> referencePoints.N_ITERATION_ALIENS_MOVES -= 10;
         }
     }
 
