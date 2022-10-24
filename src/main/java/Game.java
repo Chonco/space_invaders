@@ -10,8 +10,6 @@ import java.util.List;
 public class Game extends JPanel {
 
     private static class ReferencePoints {
-        int[] ALIENS_BOTTOM = new int[GameConstants.ALIENS_NUM_COLUMNS];
-
         int N_ITERATION_ALIENS_MOVES = 30;
 
         int PLAYER_X = GameConstants.GAP_SCREEN_X;
@@ -41,7 +39,6 @@ public class Game extends JPanel {
         this.aliensProjectiles = new ArrayList<>();
 
         initAliensList();
-        initializeAliensBottoms();
 
         timer = new Timer(GameConstants.UPDATE_INTERVAL, e -> {
             updateGameState();
@@ -63,12 +60,6 @@ public class Game extends JPanel {
                     this.aliens.add(new AlienDisplayed(new Point(x, y), assets.getBigHead()));
             }
         }
-    }
-
-    private void initializeAliensBottoms() {
-        Arrays.fill(referencePoints.ALIENS_BOTTOM,
-                GameConstants.GAP_SCREEN_Y +
-                        ((GameConstants.ALIEN_SIZE_Y + GameConstants.GAP_ALIEN_Y) * GameConstants.ALIENS_NUM_ROWS));
     }
 
     public boolean isGameRunning() {
