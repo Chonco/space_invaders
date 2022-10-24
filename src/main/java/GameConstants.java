@@ -9,6 +9,7 @@ public class GameConstants {
     static final int ALIENS_TOTAL_NUM = ALIENS_NUM_COLUMNS * ALIENS_NUM_ROWS;
     static final int ALIEN_SIZE_X = PIXEL_SIZE * 12;
     static final int ALIEN_SIZE_Y = PIXEL_SIZE * 8;
+    static final int ALIEN_SHOOTS_EVERY = 30;
 
     static final int GAP_ALIEN_X = PIXEL_SIZE * 6;
     static final int GAP_ALIEN_Y = PIXEL_SIZE * 3;

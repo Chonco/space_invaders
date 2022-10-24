@@ -20,7 +20,8 @@ public class Game extends JPanel {
     private final Assets assets;
     private final List<AlienDisplayed> aliens;
     private final ReferencePoints referencePoints;
-    private final List<Point> playerProjectiles;
+    private Point playerProjectile;
+    private final List<Point> aliensProjectiles;
     private final List<AlienDestroyed> aliensDestroyed;
 
     private final Timer timer;
@@ -36,8 +37,8 @@ public class Game extends JPanel {
         this.assets = new Assets();
         this.aliens = new ArrayList<>();
         this.referencePoints = new ReferencePoints();
-        this.playerProjectiles = new ArrayList<>();
         this.aliensDestroyed = new LinkedList<>();
+        this.aliensProjectiles = new ArrayList<>();
 
         initAliensList();
         initializeAliensBottoms();
@@ -92,10 +93,12 @@ public class Game extends JPanel {
     }
 
     public void playerFired() {
-        this.playerProjectiles.add(new Point(
-                referencePoints.PLAYER_X + assets.getPlayer().getBounds().width / 2,
-                getHeight() - GameConstants.GAP_SCREEN_Y -
-                        assets.getPlayer().getBounds().height - assets.getProjectile().getBounds().height - 5));
+        if (this.playerProjectile == null) {
+            this.playerProjectile = new Point(
+                    referencePoints.PLAYER_X + assets.getPlayer().getBounds().width / 2,
+                    getHeight() - GameConstants.GAP_SCREEN_Y -
+                            assets.getPlayer().getBounds().height - assets.getProjectile().getBounds().height - 5);
+        }
     }
 
     private void updateGameState() {
@@ -107,9 +110,18 @@ public class Game extends JPanel {
             updateAliensCoordinates(aliensAlive);
         }
 
+        if (iteration % GameConstants.ALIEN_SHOOTS_EVERY == 0) {
+            alienShoots();
+        }
+
+        if (playerProjectile != null) {
+            updatePlayerProjectile();
+            checkCollidesAliensProjectile(aliensAlive);
+        }
+
         updateAliensDestroyed();
-        updateProjectiles();
-        checkCollidesAliensProjectiles(aliensAlive);
+        updateAlienProjectiles();
+        checkCollidesPlayerProjectiles();
         updateAlienSpeed();
         updatePlayer();
     }
@@ -144,43 +156,86 @@ public class Game extends JPanel {
         alienUsesFirstAsset = !alienUsesFirstAsset;
     }
 
+    private void alienShoots() {
+        Random random = new Random();
+        int alienIndexToShoot = random.nextInt(GameConstants.ALIENS_NUM_COLUMNS) +
+                (GameConstants.ALIENS_NUM_COLUMNS * (GameConstants.ALIENS_NUM_ROWS - 1));
+
+        AlienDisplayed alienToShoot;
+
+        while (true) {
+            alienToShoot = aliens.get(alienIndexToShoot);
+            if (alienToShoot.isAlive())
+                break;
+
+            alienIndexToShoot -= GameConstants.ALIENS_NUM_COLUMNS;
+            if (alienIndexToShoot < 0)
+                break;
+        }
+
+        if (!alienToShoot.isAlive()) return;
+
+        aliensProjectiles.add(new Point(
+                alienToShoot.getPoint().x + alienToShoot.getAlien().getBounds().width / 2,
+                alienToShoot.getPoint().y + alienToShoot.getAlien().getBounds().height + GameConstants.GAP_ALIEN_Y
+        ));
+    }
+
     private void updateAliensDestroyed() {
         aliensDestroyed.removeIf(alienDestroyed ->
                 iteration - alienDestroyed.getIteration() >= referencePoints.N_ITERATION_ALIENS_MOVES);
     }
 
-    private void updateProjectiles() {
-        List<Point> projectilesToRemove = new ArrayList<>();
-        for (Point projectile : playerProjectiles) {
-            int y = projectile.y - GameConstants.PROJECTILE_MOVEMENT;
+    private void updatePlayerProjectile() {
+        int y = playerProjectile.y - GameConstants.PROJECTILE_MOVEMENT;
 
-            if (y <= 0)
-                projectilesToRemove.add(projectile);
+        if (y <= 0)
+            playerProjectile = null;
+        else
+            playerProjectile.setLocation(playerProjectile.x, y);
+    }
+
+    private void updateAlienProjectiles() {
+        List<Point> toDelete = new ArrayList<>();
+
+        for (Point projectile : aliensProjectiles) {
+            int y = projectile.y + GameConstants.PROJECTILE_MOVEMENT;
+
+            if (y >= getHeight())
+                toDelete.add(projectile);
             else
                 projectile.setLocation(projectile.x, y);
         }
 
-        playerProjectiles.removeAll(projectilesToRemove);
+        aliensProjectiles.removeAll(toDelete);
     }
 
-    private void checkCollidesAliensProjectiles(List<AlienDisplayed> aliensAlive) {
+    private void checkCollidesAliensProjectile(List<AlienDisplayed> aliensAlive) {
         for (AlienDisplayed alienDisplayed : aliensAlive) {
-            Point projectileToBeRemoved = null;
-            for (Point projectile : playerProjectiles) {
-                if (contextualRectangleContainsPoint(
-                        alienDisplayed.getPoint(),
-                        alienDisplayed.getAlien().getBounds(),
-                        projectile)
-                ) {
-                    alienDisplayed.setAlive(false);
-                    this.aliensDestroyed.add(new AlienDestroyed(alienDisplayed.getPoint(), iteration));
-                    projectileToBeRemoved = projectile;
-                    break;
-                }
+            if (contextualRectangleContainsPoint(
+                    alienDisplayed.getPoint(),
+                    alienDisplayed.getAlien().getBounds(),
+                    playerProjectile)
+            ) {
+                alienDisplayed.setAlive(false);
+                this.aliensDestroyed.add(new AlienDestroyed(alienDisplayed.getPoint(), iteration));
+                playerProjectile = null;
+                break;
             }
+        }
+    }
 
-            if (projectileToBeRemoved != null)
-                playerProjectiles.remove(projectileToBeRemoved);
+    private void checkCollidesPlayerProjectiles() {
+        for (Point projectile : aliensProjectiles) {
+            if (contextualRectangleContainsPoint(
+                    new Point(referencePoints.PLAYER_X, getHeight() - GameConstants.GAP_SCREEN_Y),
+                    assets.getPlayer().getBounds(),
+                    projectile
+            )) {
+                stopGame();
+                JOptionPane.showMessageDialog(this, "Game Finished Player Loses :(");
+                System.exit(0);
+            }
         }
     }
 
@@ -208,6 +263,7 @@ public class Game extends JPanel {
     }
 
     private boolean contextualRectangleContainsPoint(Point initPoint, Rectangle rectangle, Point target) {
+        if (target == null) return false;
         Rectangle zone = new Rectangle(initPoint.x, initPoint.y, rectangle.width, rectangle.height);
         return zone.contains(target);
     }
@@ -218,7 +274,7 @@ public class Game extends JPanel {
 
         if (this.aliens.stream().noneMatch(AlienDisplayed::isAlive)) {
             stopGame();
-            JOptionPane.showMessageDialog(this, "Game Finished!");
+            JOptionPane.showMessageDialog(this, "Game Finished! Player Wins!");
             System.exit(0);
         }
 
@@ -247,8 +303,11 @@ public class Game extends JPanel {
             g.drawImage(assets.getDestroyed().getAsset(), alienDestroyed.getPoint().x, alienDestroyed.getPoint().y, null);
         }
 
-        for (Point point : playerProjectiles) {
-            g.drawImage(assets.getProjectile().getAsset(), point.x, point.y, null);
+        if (playerProjectile != null)
+            g.drawImage(assets.getProjectile().getAsset(), playerProjectile.x, playerProjectile.y, null);
+
+        for (Point projectile : aliensProjectiles) {
+            g.drawImage(assets.getProjectile().getAsset(), projectile.x, projectile.y, null);
         }
 
         g.drawImage(assets.getPlayer().getAsset(), referencePoints.PLAYER_X, getHeight() - GameConstants.GAP_SCREEN_Y, null);
