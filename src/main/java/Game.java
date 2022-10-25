@@ -1,16 +1,20 @@
 import assets.Assets;
 
+import javax.sound.sampled.*;
 import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.List;
 
 public class Game extends JPanel {
 
     private static class ReferencePoints {
-        int N_ITERATION_ALIENS_MOVES = 30;
+        int N_ITERATION_ALIENS_MOVES = 15;
 
         int PLAYER_X = GameConstants.GAP_SCREEN_X;
     }
@@ -89,7 +93,12 @@ public class Game extends JPanel {
                     referencePoints.PLAYER_X + assets.getPlayer().getBounds().width / 2,
                     getHeight() - GameConstants.GAP_SCREEN_Y -
                             assets.getPlayer().getBounds().height - assets.getProjectile().getBounds().height - 5);
+            reproducePlayerShotSound();
         }
+    }
+
+    private void reproducePlayerShotSound() {
+        reproduceSound("shoot.wav");
     }
 
     private void updateGameState() {
@@ -211,8 +220,25 @@ public class Game extends JPanel {
                 alienDisplayed.setAlive(false);
                 this.aliensDestroyed.add(new AlienDestroyed(alienDisplayed.getPoint(), iteration));
                 playerProjectile = null;
+                reproduceAlienKilledSound();
                 break;
             }
+        }
+    }
+
+    private void reproduceAlienKilledSound() {
+        reproduceSound("invaderKilled.wav");
+    }
+
+    private void reproduceSound(String fileName) {
+        try (InputStream inputStream = getClass().getResourceAsStream(fileName)) {
+            if (inputStream == null) return;
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new BufferedInputStream(inputStream));
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioInputStream);
+            clip.start();
+        } catch (IOException | UnsupportedAudioFileException | LineUnavailableException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -234,9 +260,9 @@ public class Game extends JPanel {
         int aliensAliveCount = (int) this.aliens.stream().filter(AlienDisplayed::isAlive).count();
 
         switch (GameConstants.ALIENS_TOTAL_NUM - aliensAliveCount) {
-            case 4, 8, 12, 16 -> referencePoints.N_ITERATION_ALIENS_MOVES = 26;
-            case 18, 20, 22 -> referencePoints.N_ITERATION_ALIENS_MOVES -= 20;
-            case 24 -> referencePoints.N_ITERATION_ALIENS_MOVES -= 10;
+            case 4, 8, 12, 16 -> referencePoints.N_ITERATION_ALIENS_MOVES = 10;
+            case 18, 20, 22 -> referencePoints.N_ITERATION_ALIENS_MOVES = 8;
+            case 24 -> referencePoints.N_ITERATION_ALIENS_MOVES = 5;
         }
     }
 

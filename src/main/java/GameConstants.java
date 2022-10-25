@@ -20,5 +20,5 @@ public class GameConstants {
 
     static final int PLAYER_MOVEMENT = 5;
 
-    static final int PROJECTILE_MOVEMENT = 2;
+    static final int PROJECTILE_MOVEMENT = 4;
 }
